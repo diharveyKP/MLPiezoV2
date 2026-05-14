@@ -297,9 +297,9 @@ def analyze_confidence_intervals(ensemble, X_test, y_test, fos_ranges=None):
         cov_90 = in_90_range/n_in_range*100
         cov_95 = in_95_range/n_in_range*100
         
-        print(f"    80% CI: {cov_80:.1f}% {self._calibration_symbol(cov_80, 80)}")
-        print(f"    90% CI: {cov_90:.1f}% {self._calibration_symbol(cov_90, 90)}")
-        print(f"    95% CI: {cov_95:.1f}% {self._calibration_symbol(cov_95, 95)}")
+        print(f"    80% CI: {cov_80:.1f}% {_calibration_symbol(cov_80, 80)}")
+        print(f"    90% CI: {cov_90:.1f}% {_calibration_symbol(cov_90, 90)}")
+        print(f"    95% CI: {cov_95:.1f}% {_calibration_symbol(cov_95, 95)}")
         
         # Mean errors and uncertainties
         errors = np.abs(y_test[mask] - y_pred[mask])

@@ -128,8 +128,13 @@ class FOSEnsemble:
         predictions = self._get_all_predictions(X)  # [n_models, n_samples]
         
         # Ensemble statistics
-        mean_pred = np.mean(predictions, axis=0)
-        std_pred = np.std(predictions, axis=0)
+        if self.model_weights is not None:
+            mean_pred = np.average(predictions, axis=0, weights=self.model_weights)
+            variance = np.average((predictions - mean_pred) ** 2, axis=0, weights=self.model_weights)
+            std_pred = np.sqrt(variance)
+        else:
+            mean_pred = np.mean(predictions, axis=0)
+            std_pred = np.std(predictions, axis=0)
         
         # Confidence score (inverse of normalized std)
         # Low std = high confidence, high std = low confidence

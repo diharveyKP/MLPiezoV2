@@ -156,6 +156,7 @@ def validate_sample_physics(control_y: np.ndarray, control_x: np.ndarray,
 
 
 def generate_valid_sample(sampler, control_x: np.ndarray, max_gradient: float,
+                         sync_groups: list[list[int]] | None = None,
                          max_attempts: int = 100) -> tuple[Optional[np.ndarray], int]:
     """
     Generate a single valid sample (with resampling if needed).
@@ -172,8 +173,8 @@ def generate_valid_sample(sampler, control_x: np.ndarray, max_gradient: float,
     for attempt in range(1, max_attempts + 1):
         # Generate candidate
         candidate = sampler.sample_random(1, seed=None)[0]  # Random for resampling
-        
-        # Validate
+        candidate = apply_synchronization(candidate.reshape(1, -1), sync_groups or [])[0]
+
         is_valid, reason = validate_sample_physics(candidate, control_x, max_gradient)
         
         if is_valid:
@@ -316,13 +317,11 @@ def generate_dataset(mode: str, n_samples: int, logger: logging.Logger) -> None:
         else:
             # Resample until valid
             valid_sample, n_attempts = generate_valid_sample(
-                sampler, cp_info['x_coords'], max_gradient, max_attempts=100
+                sampler, cp_info['x_coords'], max_gradient, cp_info['sync_groups'], max_attempts=100
             )
             
             if valid_sample is not None:
-                # Apply sync to resampled
-                valid_synced = apply_synchronization(valid_sample.reshape(1, -1), cp_info['sync_groups'])[0]
-                validated_samples.append(valid_synced)
+                validated_samples.append(valid_sample)
                 total_resamples += 1
             else:
                 print(f"  ⚠️  Sample {i+1}: Could not generate valid sample after 50 attempts")

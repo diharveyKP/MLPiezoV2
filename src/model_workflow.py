@@ -15,7 +15,7 @@ import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from threading import Lock
 from typing import Dict, List, Optional, Sequence, Tuple
 import xml.etree.ElementTree as ET
@@ -136,6 +136,22 @@ def _short_model_dir(root: Path, model_index: int, section_name: str, model_name
     return root / f"m{model_index:03d}_{_safe_name(section_name)[:12]}_{_safe_name(model_name)[:24]}"
 
 
+def _resolve_archive_member_path(destination: Path, member_name: str) -> Path:
+    normalized = member_name.replace("\\", "/").strip("/")
+    pure_path = PurePosixPath(normalized)
+
+    if not normalized or pure_path.is_absolute() or pure_path.drive:
+        raise ValueError(f"Unsafe archive member path: {member_name}")
+    if any(part in ("", ".", "..") for part in pure_path.parts):
+        raise ValueError(f"Unsafe archive member path: {member_name}")
+
+    target = (destination / Path(*pure_path.parts)).resolve()
+    destination_root = destination.resolve()
+    if not target.is_relative_to(destination_root):
+        raise ValueError(f"Archive member escapes destination: {member_name}")
+    return target
+
+
 def _extract_full_gsz_model(archive_path: Path, destination: Path) -> Path:
     destination.mkdir(parents=True, exist_ok=True)
     top_level_xml: Optional[Path] = None
@@ -145,7 +161,7 @@ def _extract_full_gsz_model(archive_path: Path, destination: Path) -> Path:
             filename = info.filename.strip("/")
             if not filename:
                 continue
-            target = destination / Path(*filename.split("/"))
+            target = _resolve_archive_member_path(destination, filename)
             if info.is_dir():
                 target.mkdir(parents=True, exist_ok=True)
                 continue
