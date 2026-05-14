@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime outputs
+logs/*.log
+data/datasets/**/*.csv
+data/datasets/**/*.parquet
+data/datasets/**/*.xlsx
+models/**/*.pkl
+models/**/*.joblib
+output/
+prepared_model_runs/
+
+# GeoStudio / heavy model artifacts
+*.gsz
+*.xml.backup
+
+# Generated figures and exports
+results/figures/*.png
+results/figures/*.pdf
+results/tables/*.xlsx
+*.csv.backup_AL
+
+# Keep lightweight docs
+!README.md
+!docs/**
+
